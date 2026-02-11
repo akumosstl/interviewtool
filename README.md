@@ -208,9 +208,4 @@ Este relatório visa:
 
 ---
 
-Se quiser, posso gerar também:
 
-- Versão executiva resumida para diretoria
-- Versão técnica detalhada para RH
-- Versão com pesos ajustáveis por vaga
-- Versão modelo para consultoria premium
