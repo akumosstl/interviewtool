@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Technical Report</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .section-title {
+            margin-top: 40px;
+            font-weight: 600;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-4 mb-5">
+        <h2 class="text-center">Relatório de entrevista técnica – Java + Angular</h2>
+
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <label>Candidato</label>
+                <input type="text" id="candidate" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label>Entrevistador</label>
+                <input type="text" id="interviewer" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label>Data</label>
+                <input type="date" id="date" class="form-control">
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <label>Recomendação</label>
+            <select id="recommendation" class="form-select">
+                <option>Contratação altamente recomendada</option>
+                <option>Contratação recomendada</option>
+                <option>Contratação à considerar</option>
+                <option>Contratação não recomendada</option>
+            </select>
+        </div>
+
+        <h4 class="section-title">Avaliação Técnica – Backend</h4>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Critério</th>
+                    <th width="120">Score</th>
+                    <th>Observações</th>
+                </tr>
+            </thead>
+            <tbody id="backendTable"></tbody>
+        </table>
+
+        <h4 class="section-title">Avaliação Técnica – Frontend</h4>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Critério</th>
+                    <th width="120">Score</th>
+                    <th>Observações</th>
+                </tr>
+            </thead>
+            <tbody id="frontendTable"></tbody>
+        </table>
+
+        <h4 class="section-title">Resolução de Problema</h4>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Critério</th>
+                    <th width="120">Score</th>
+                    <th>Observações</th>
+                </tr>
+            </thead>
+            <tbody id="problemTable"></tbody>
+        </table>
+
+        <h4 class="section-title">Soft Skills e Perfil Profissional</h4>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Critério</th>
+                    <th width="120">Score</th>
+                    <th>Observações</th>
+                </tr>
+            </thead>
+            <tbody id="softTable"></tbody>
+        </table>
+
+        <h4 class="section-title">Avaliação de Senioridade</h4>
+        <select id="seniority" class="form-select mb-3">
+            <option>Junior</option>
+            <option>Mid-Level</option>
+            <option>Senior</option>
+            <option>Tech Lead</option>
+        </select>
+        <textarea id="seniorityNotes" class="form-control" rows="3"></textarea>
+
+        <h4 class="section-title">Pontos Fortes</h4>
+        <textarea id="strengths" class="form-control" rows="3"></textarea>
+
+        <h4 class="section-title">Pontos de Atenção</h4>
+        <textarea id="attention" class="form-control" rows="3"></textarea>
+
+        <h4 class="section-title">Riscos Identificados</h4>
+        <textarea id="risks" class="form-control" rows="3"></textarea>
+
+        <div class="mt-4">
+            <button class="btn btn-success" onclick="generatePDF()">Exportar PDF</button>
+        </div>
+    </div>
+
+    <script>
+        const backendCriteria = ["Core Java", "Spring Boot", "JPA/Hibernate", "Security", "Architecture/Design", "Testing"];
+        const backendObs = [
+            "1. Quais principais princípios da OOP?\n" + 
+            "2. O que são Immutable Classes?\n" +
+            "3. Como implementar uma Immutable Class?\n" +
+            "4. O que é Override?\n" +
+            "5. O que é Overloading?\n" + 
+            "6. O que é autoboxing?\n" +
+            "7. Podemos fazer override e overloading de construtores?\n" +
+            "8. Qual importância de reescrever os métodos: hashCode e equals?",
+            
+            "1. Qual é o propósito da anotação: @SpringBootApplication?\n" +
+            "2. Qual diferença entre @Bean e @Component?\n" +
+            "3. Como você está usando @Transactional?\n" +
+            "4. Como é o Bean Life Cycle do spring?\n" +
+            "5. Quais escopos de beans existem em spring?\n" + 
+            "6. O que é o Spring IOC?\n" + 
+            "7. Como você está gerenciando o tratamento de erros no spring?",
+            
+            "1. O que são: SessionFactory e Session?\n" +
+            "2. Session e PersistenceContext são a mesma coisa?\n" +
+            "3. Explique o mecanismo de Cache do Hibernate\n" +
+            "4. Explique o problema do N+1 Select?\n" +
+            "5. Como o hibernate gerencia o Pessimistic e Optimistic lock?",
+        
+            "1. Como você está protegendo suas aplicações?",
+
+            "1. Quais system design você utiliza?\n" +
+            "2, Quais design patterns você conhece?",
+            
+            "1. Como você está testando suas aplicações?"];
+        const frontendCriteria = ["TypeScript", "Components", "RxJS", "State Management", "API Integration", "Best Practices"];
+        
+        const frontendObs = [
+            "const userEmail = userInfo?.profile?.email; // Returns undefined if profile is missing\n" +
+            "const score = 0; const result = score ?? 10; // Result is 0 (not 10)" ,
+            "1. Quais são os lifeCycle/hooks do angular?\n" +
+            "2. Qual estratégia de mudanças você está utilizando?", 
+            
+            "Qual melhor maneira de fazer nested subscriptions?", 
+            
+            "1. Explique @Input?\n" + 
+            "2. Explique @Output?", 
+            
+            "1. Como você está fazendo chamadas a APIs?", 
+            
+            "1. Como compilar uma aplicação angular para produção?\n" +
+            "2. Quais tipos de compilação existem em angular?"];
+        
+        const problemCriteria = ["Claridade", "Raciocínio", "Code Quality", "Testability", "Comunicação"];
+        const problemObs = ["Claridade", "Raciocínio", "Code Quality", "Testability", "Comunicação"];
+        const softCriteria = ["Comunicação", "Argumentação", "Protagonismo", "Teamwork", "Postura Profissional"];
+        const softObs = ["Comunicação", "Argumentação", "Ownership", "Teamwork", "Postura Profissional"];
+
+        function buildTable(criteria, obs, tableId, prefix) {
+            const table = document.getElementById(tableId);
+            criteria.forEach((item, index) => {
+                table.innerHTML += `
+                    <tr>
+                    <td>${item}</td>
+                    <td><input type="number" min="0" max="5" class="form-control ${prefix}-score"></td>
+                    <td><textarea class="form-control ${prefix}-note" rows="15">${obs[index]}</textarea></td>
+                    </tr>`;
+            });
+        }
+
+        buildTable(backendCriteria, backendObs, "backendTable", "backend");
+        buildTable(frontendCriteria, frontendObs, "frontendTable", "frontend");
+        buildTable(problemCriteria, problemObs, "problemTable", "problem");
+        buildTable(softCriteria, softObs, "softTable", "soft");
+
+        function collectSection(title, criteria, prefix) {
+            let rows = [];
+            const scores = document.querySelectorAll(`.${prefix}-score`);
+            const notes = document.querySelectorAll(`.${prefix}-note`);
+            let total = 0;
+            criteria.forEach((item, i) => {
+                const score = Number(scores[i].value) || 0;
+                total += score;
+                rows.push([item, String(score), notes[i].value || ""]);
+            });
+            return { title, rows, total };
+        }
+
+        function addTable(pdf, startY, section) {
+            const { title, rows, total } = section;
+            pdf.setFontSize(12);
+            pdf.text(title, 10, startY);
+            startY += 6;
+
+            pdf.setFontSize(10);
+            rows.forEach(row => {
+                if (startY > 270) {
+                    pdf.addPage();
+                    startY = 15;
+                }
+                pdf.text(`${row[0]} | Score: ${row[1]}`, 10, startY);
+                startY += 5;
+
+                const splitText = pdf.splitTextToSize(row[2], 180);
+                pdf.text(splitText, 10, startY);
+                startY += splitText.length * 5 + 3;
+            });
+
+            if (startY > 270) {
+                pdf.addPage();
+                startY = 15;
+            }
+            pdf.text(`Subtotal: ${total}`, 10, startY);
+            return startY + 10;
+        }
+
+        function generatePDF() {
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF("p", "mm", "a4");
+
+            let y = 15;
+
+            pdf.setFontSize(16);
+            pdf.text("Interview Technical Report", 10, y);
+            y += 10;
+
+            pdf.setFontSize(11);
+            pdf.text(`Candidate: ${candidate.value}`, 10, y); y += 6;
+            pdf.text(`Interviewer: ${interviewer.value}`, 10, y); y += 6;
+            pdf.text(`Date: ${date.value}`, 10, y); y += 6;
+            pdf.text(`Recommendation: ${recommendation.value}`, 10, y); y += 10;
+
+            const backend = collectSection("Avaliação Técnica - Backend", backendCriteria, "backend");
+            const frontend = collectSection("Avaliação Técnica - Frontend", frontendCriteria, "frontend");
+            const problem = collectSection("Resolução de Problema", problemCriteria, "problem");
+            const soft = collectSection("Soft Skills e Perfil Profissional", softCriteria, "soft");
+
+            y = addTable(pdf, y, backend);
+            y = addTable(pdf, y, frontend);
+            y = addTable(pdf, y, problem);
+            y = addTable(pdf, y, soft);
+
+            if (y > 260) { pdf.addPage(); y = 15; }
+
+            pdf.setFontSize(12);
+            pdf.text("Avaliação de Senioridade", 10, y); y += 6;
+            pdf.setFontSize(10);
+            pdf.text(`Nível: ${seniority.value}`, 10, y); y += 6;
+            const seniorNotes = pdf.splitTextToSize(seniorityNotes.value, 180);
+            pdf.text(seniorNotes, 10, y);
+            y += seniorNotes.length * 5 + 8;
+
+            if (y > 260) { pdf.addPage(); y = 15; }
+
+            pdf.setFontSize(12);
+            pdf.text("Pontos Fortes", 10, y); y += 6;
+            pdf.setFontSize(10);
+            const strengthsText = pdf.splitTextToSize(strengths.value, 180);
+            pdf.text(strengthsText, 10, y);
+            y += strengthsText.length * 5 + 8;
+
+            if (y > 260) { pdf.addPage(); y = 15; }
+
+            pdf.setFontSize(12);
+            pdf.text("Pontos de Atenção", 10, y); y += 6;
+            pdf.setFontSize(10);
+            const attentionText = pdf.splitTextToSize(attention.value, 180);
+            pdf.text(attentionText, 10, y);
+            y += attentionText.length * 5 + 8;
+
+            if (y > 260) { pdf.addPage(); y = 15; }
+
+            pdf.setFontSize(12);
+            pdf.text("Riscos Identificados", 10, y); y += 6;
+            pdf.setFontSize(10);
+            const risksText = pdf.splitTextToSize(risks.value, 180);
+            pdf.text(risksText, 10, y);
+            y += risksText.length * 5 + 10;
+
+            const total = backend.total + frontend.total + problem.total + soft.total;
+            const finalScore = ((total / 120) * 100).toFixed(1);
+
+            if (y > 260) { pdf.addPage(); y = 15; }
+
+            pdf.setFontSize(12);
+            pdf.text(`Total Geral: ${total} / 120`, 10, y); y += 6;
+            pdf.text(`Score Final: ${finalScore} / 100`, 10, y);
+
+            pdf.save(`Interview_Report_${candidate.value || "Candidate"}.pdf`);
+        }
+    </script>
+
+</body>
+
+</html>
